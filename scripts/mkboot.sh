@@ -16,7 +16,14 @@ DTB=$KERNEL_SRC/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dtb
 
 [ -f "$IMAGE" ] || { echo "missing $IMAGE (run: make kernel)" >&2; exit 1; }
 [ -f "$DTB" ]   || { echo "missing $DTB (is the enchilada device tree in your kernel?)" >&2; exit 1; }
-command -v mkbootimg >/dev/null || { echo "mkbootimg not installed" >&2; exit 1; }
+
+# Uses the bundled pure-Python packer. Set MKBOOTIMG=/path/to/mkbootimg to use the AOSP tool instead.
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+if [ -n "${MKBOOTIMG:-}" ]; then
+    mkbootimg() { "$MKBOOTIMG" "$@"; }
+else
+    mkbootimg() { python3 "$SCRIPT_DIR/mkbootimg.py" "$@"; }
+fi
 
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT

@@ -2,7 +2,8 @@
 # Fetch, configure and build the Pico M0 kernel for the OnePlus 6 (arm64).
 #
 # Usage: scripts/build-kernel.sh            # build natively with aarch64-linux-gnu-gcc
-#        make kernel-docker                 # same build inside a Debian container
+#        make docker-build                  # kernel + BusyBox + boot image in a container
+#        ./scripts/mac-build.sh             # macOS: installs tools, then does the above
 #
 # Environment:
 #   KERNEL_TAG   kernel version tag to build (default v6.12, a long-term release)
@@ -14,7 +15,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 KERNEL_TAG=${KERNEL_TAG:-v6.12}
 KERNEL_SRC=${KERNEL_SRC:-$ROOT/build/linux}
 JOBS=${JOBS:-$(nproc)}
-CROSS=${CROSS:-aarch64-linux-gnu-}
+CROSS=${CROSS-aarch64-linux-gnu-}   # set CROSS="" to build natively on an arm64 machine
 
 # --- 1. Tools -----------------------------------------------------------------
 missing=""
@@ -24,7 +25,7 @@ done
 if [ -n "$missing" ]; then
     echo "missing tools:$missing" >&2
     echo "Debian/Ubuntu: sudo apt install build-essential gcc-aarch64-linux-gnu flex bison bc libssl-dev libelf-dev git" >&2
-    echo "Or run the build in a container: make kernel-docker" >&2
+    echo "Or run the whole build in a container: make docker-build (macOS: ./scripts/mac-build.sh)" >&2
     exit 1
 fi
 
@@ -66,10 +67,6 @@ make -j"$JOBS" Image.gz dtbs
 
 DTB=arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dtb
 [ -f arch/arm64/boot/Image.gz ] && [ -f "$DTB" ] || { echo "build finished without the expected outputs" >&2; exit 1; }
-
-if [ -n "${HOST_UID:-}" ]; then
-    chown -R "$HOST_UID:${HOST_GID:-$HOST_UID}" "$ROOT/build" 2>/dev/null || true
-fi
 
 echo
 echo "kernel built: $KERNEL_SRC/arch/arm64/boot/Image.gz"
