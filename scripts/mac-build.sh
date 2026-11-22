@@ -29,6 +29,7 @@ command -v brew >/dev/null 2>&1 || die "Homebrew is not installed. Install it fr
 say "Installing tools with Homebrew"
 command -v git >/dev/null 2>&1 || brew install git
 brew list --cask android-platform-tools >/dev/null 2>&1 || brew install --cask android-platform-tools
+command -v telnet >/dev/null 2>&1 || brew install telnet   # macOS no longer ships telnet
 if ! command -v docker >/dev/null 2>&1; then
     brew install colima docker
 fi

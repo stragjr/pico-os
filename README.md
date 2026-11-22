@@ -61,10 +61,20 @@ cannot hold. Linux with Docker can run `make docker-build` for the same result.
    use the enchilada device tree, so this only checks that init runs.
 4. Test from RAM, without flashing anything (phone in fastboot mode, power off then
    hold Volume Up + Power): `fastboot boot out/pico-boot.img`
-5. Once the phone shows up as a USB network device, give your PC an address on
-   the same network (for example `172.16.42.2/24`) and run `telnet 172.16.42.1`.
-   This M0 shell has no password and is only reachable over the USB cable; it is
-   replaced by SSH in a later milestone.
+5. Pico shows up as a USB network device (CDC-ECM, which macOS supports; it has no RNDIS driver).
+   Find the new interface with `networksetup -listallhardwareports`, give it an address
+   (`sudo ifconfig enX 172.16.42.2 netmask 255.255.255.0`, with enX from that list), then run
+   `telnet 172.16.42.1`. This M0 shell has no password and is only reachable over the USB
+   cable; it is replaced by SSH in a later milestone.
+
+### If the phone stays on the fastboot screen
+
+Two different cases look alike. With the phone still showing the fastboot screen, run on the Mac:
+
+- `fastboot devices`: if the phone is still listed, the bootloader never started the kernel
+  (image rejected, or bootloader still locked: check "DEVICE STATE" on the fastboot screen).
+- `system_profiler SPUSBDataType | grep -B2 -A8 Pico`: if "Pico OnePlus 6" appears, the kernel
+  IS running and only the screen is frozen on the old picture. Pico is then reachable over USB.
 
 ## Check before you flash
 

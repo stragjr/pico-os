@@ -53,7 +53,7 @@ make olddefconfig
 bad=0
 for sym in BLK_DEV_INITRD DEVTMPFS DEVTMPFS_MOUNT SCSI_UFS_QCOM DRM_MSM \
            DRM_PANEL_SAMSUNG_SOFEF00 RMI4_I2C USB_DWC3_QCOM USB_CONFIGFS \
-           USB_CONFIGFS_RNDIS PSTORE_RAM ANDROID_BINDER_IPC; do
+           USB_CONFIGFS_ECM DRM_SIMPLEDRM FRAMEBUFFER_CONSOLE PSTORE_RAM ANDROID_BINDER_IPC; do
     if ! grep -q "^CONFIG_$sym=y" .config; then
         echo "WARNING: CONFIG_$sym is not =y in the final .config" >&2
         bad=1
