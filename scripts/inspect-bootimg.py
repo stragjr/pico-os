@@ -26,6 +26,9 @@ def parse(path):
     if d[:8] != b"ANDROID!":
         sys.exit("%s: not an Android boot image (no ANDROID! magic)" % path)
     (ksize, kaddr, rsize, raddr, ssize, saddr, tags, page, ver, osver) = struct.unpack("<10I", d[8:48])
+    if page not in (2048, 4096, 8192, 16384) or ver > 4:
+        sys.exit("%s: the header does not look valid (page size %d, header version %d); "
+                 "this is not a normal boot image" % (path, page, ver))
     name = d[48:64].split(b"\0")[0].decode(errors="replace")
     cmd = d[64:576].split(b"\0")[0].decode(errors="replace")
     extra = d[608:1632].split(b"\0")[0].decode(errors="replace")

@@ -68,8 +68,17 @@ cannot hold. Linux with Docker can run `make docker-build` for the same result.
 
 ## Check before you flash
 
-Compare your phone's stock `boot.img` with what Pico builds:
-`python3 scripts/inspect-bootimg.py stock-boot.img out/pico-boot.img`
+One command checks Pico's boot image settings against your phone's stock boot image.
+Give it a FULL OxygenOS OTA zip for the OnePlus 6 (not an incremental one), a `payload.bin`,
+a `boot.img`, or a download link to the zip:
+
+```
+./scripts/check-stock-boot.sh ~/Downloads/OnePlus6Oxygen_xxx.zip
+```
+
+It extracts the boot partition from the OTA (plain Python, nothing to install), prints its header,
+and compares it with `scripts/mkboot.sh` and with `out/pico-boot.img` if you have built it.
+`scripts/inspect-bootimg.py` does the comparison part on its own.
 
 The boot image offsets and kernel command line in `scripts/mkboot.sh` are
 starting values. Confirm them against your own unit (`fastboot getvar all`,
