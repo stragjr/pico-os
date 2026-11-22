@@ -42,6 +42,20 @@ The source tree lives in a Docker volume, not a Mac folder, because the Linux
 source has file names that differ only by case, which macOS's default filesystem
 cannot hold. Linux with Docker can run `make docker-build` for the same result.
 
+## Quick start on Arch Linux
+
+```
+git clone https://github.com/stragjr/pico-os
+cd pico-os
+./scripts/arch-build.sh
+```
+
+Run it as your normal user. It installs `git python docker docker-buildx android-tools inetutils` with
+pacman, starts Docker, adds you to the `docker` group, then builds in a container exactly like the Mac
+script does (same output in `out/`, same `--boot` option). If you were just added to the `docker` group
+and the script cannot reach Docker, log out and back in and run it again. On other Linux distributions
+install Docker yourself and run `sh scripts/docker-build.sh`.
+
 ## What you need without the Mac script
 
 - Docker (for `make docker-build`), or `aarch64-linux-gnu-gcc` with `flex bison bc` for `make kernel-build`
