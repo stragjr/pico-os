@@ -11,6 +11,7 @@ import sys
 
 MAGIC = b"ANDROID!"
 HEADER = struct.Struct("<8s10I16s512s32s1024s")  # 1632 bytes
+HEADER_V1 = struct.Struct("<IQI")                 # extra fields in header version 1 (16 bytes)
 
 
 def num(text):
@@ -45,8 +46,8 @@ def main():
     ap.add_argument("--output", "-o", required=True)
     args = ap.parse_args()
 
-    if args.header_version != 0:
-        sys.exit("only boot image header version 0 is supported here")
+    if args.header_version not in (0, 1):
+        sys.exit("only boot image header versions 0 and 1 are supported here")
 
     cmdline = args.cmdline.encode()
     if len(cmdline) > 512 + 1024 - 1:
@@ -60,7 +61,10 @@ def main():
         sys.exit("kernel file is empty")
 
     sha = hashlib.sha1()
-    for blob in (kernel, ramdisk, second):
+    blobs = [kernel, ramdisk, second]
+    if args.header_version >= 1:
+        blobs.append(b"")  # no recovery dtbo in a boot image
+    for blob in blobs:
         sha.update(blob)
         sha.update(struct.pack("<I", len(blob)))
     image_id = sha.digest().ljust(32, b"\0")
@@ -79,6 +83,9 @@ def main():
         image_id,
         cmd_extra,
     )
+    if args.header_version == 1:
+        # recovery_dtbo_size, recovery_dtbo_offset, header_size
+        header += HEADER_V1.pack(0, 0, HEADER.size + HEADER_V1.size)
 
     with open(args.output, "wb") as out:
         out.write(pad(header, args.pagesize))

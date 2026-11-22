@@ -42,6 +42,7 @@ mkbootimg \
     --ramdisk_offset 0x01000000 \
     --second_offset 0x00f00000 \
     --tags_offset 0x00000100 \
+    --header_version 1 \
     --cmdline "$CMDLINE" \
     --output "$OUT"
 

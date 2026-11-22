@@ -16,7 +16,7 @@ PICO = {
     "ramdisk address": 0x01000000,
     "second address": 0x00F00000,
     "tags address": 0x00000100,
-    "header version": 0,
+    "header version": 1,
 }
 
 
@@ -32,7 +32,12 @@ def parse(path):
     name = d[48:64].split(b"\0")[0].decode(errors="replace")
     cmd = d[64:576].split(b"\0")[0].decode(errors="replace")
     extra = d[608:1632].split(b"\0")[0].decode(errors="replace")
+    dtbo_size = dtbo_offset = header_size = 0
+    if ver == 1:
+        dtbo_size, dtbo_offset, header_size = struct.unpack("<IQI", d[1632:1648])
     return {
+        "_recovery dtbo size": dtbo_size,
+        "_header size": header_size,
         "page size": page,
         "kernel address": kaddr,
         "ramdisk address": raddr,
@@ -56,7 +61,9 @@ def show(label, h):
     print("  %-16s %d bytes" % ("kernel size", h["_kernel size"]))
     print("  %-16s %d bytes" % ("ramdisk size", h["_ramdisk size"]))
     print("  %-16s %s" % ("cmdline", h["_cmdline"] or "(empty)"))
-    if h["header version"] > 0:
+    if h["header version"] == 1:
+        print("  %-16s %d bytes (recovery dtbo %d bytes)" % ("header size", h["_header size"], h["_recovery dtbo size"]))
+    elif h["header version"] > 1:
         print("  note: header version %d has extra fields that this tool does not decode" % h["header version"])
 
 
