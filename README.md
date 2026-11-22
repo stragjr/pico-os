@@ -106,6 +106,14 @@ python3 scripts/dtb-ids.py build/stock/ota.zip --write kernel/bootloader-ids.txt
 
 (`build/stock/ota.zip` is whatever `check-stock-boot.sh` saved; any stock `boot.img` works.)
 
+### If it still stays in fastboot: bisect
+
+`./scripts/make-test-images.sh` (after a finished build) writes two images in `out/` made from your
+stock boot image: `test1-stock-repacked.img` (stock kernel and ramdisk, repacked by Pico's packer) and
+`test2-stock-kernel-pico-initramfs.img` (stock kernel with Pico's initramfs). Try each with
+`fastboot boot` and note whether the phone leaves the fastboot screen. test1 should boot Android; if it
+does not, `fastboot boot` itself or the packer is the problem, not Pico's kernel.
+
 ## Check before you flash
 
 One command checks Pico's boot image settings against your phone's stock boot image.

@@ -43,6 +43,7 @@ def main():
     ap.add_argument("--tags_offset", type=num, default=0x00000100)
     ap.add_argument("--pagesize", type=num, default=2048, choices=[2048, 4096, 8192, 16384])
     ap.add_argument("--header_version", type=num, default=0)
+    ap.add_argument("--os_version", type=num, default=0, help="raw 32-bit os_version/patch level field")
     ap.add_argument("--output", "-o", required=True)
     args = ap.parse_args()
 
@@ -77,7 +78,7 @@ def main():
         args.base + args.tags_offset,
         args.pagesize,
         args.header_version,
-        0,  # os_version
+        args.os_version,
         args.board.encode()[:15],
         cmd_main,
         image_id,
