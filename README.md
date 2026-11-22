@@ -68,6 +68,9 @@ cannot hold. Linux with Docker can run `make docker-build` for the same result.
 
 ## Check before you flash
 
+Compare your phone's stock `boot.img` with what Pico builds:
+`python3 scripts/inspect-bootimg.py stock-boot.img out/pico-boot.img`
+
 The boot image offsets and kernel command line in `scripts/mkboot.sh` are
 starting values. Confirm them against your own unit (`fastboot getvar all`,
 and the unpacked stock `boot.img`) before writing anything with
