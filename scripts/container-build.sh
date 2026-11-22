@@ -42,10 +42,22 @@ cd /
 # --- Initramfs and boot image ---------------------------------------------------
 echo "==> initramfs and boot image"
 python3 /pico/scripts/mkinitramfs.py --root /pico/initramfs --busybox "$BB/busybox" --out /build/initramfs.cpio.gz
+
+DTB=$KERNEL_SRC/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dtb
+if [ -f /pico/kernel/bootloader-ids.txt ]; then
+    echo "==> adding bootloader IDs (kernel/bootloader-ids.txt) to the device tree"
+    sh /pico/scripts/patch-dtb-ids.sh /pico/kernel/bootloader-ids.txt "$DTB" /build/enchilada-patched.dtb
+    DTB=/build/enchilada-patched.dtb
+else
+    echo "NOTE: kernel/bootloader-ids.txt not found; the device tree has no qcom,msm-id/board-id," >&2
+    echo "      and the OnePlus bootloader may accept the image but not start it." >&2
+    echo "      Create it with: python3 scripts/dtb-ids.py <stock boot.img> --write kernel/bootloader-ids.txt" >&2
+fi
+export DTB
 sh /pico/scripts/mkboot.sh "$KERNEL_SRC" /build/initramfs.cpio.gz /out/pico-boot.img
 
 cp "$KERNEL_SRC/arch/arm64/boot/Image.gz" /out/Image.gz
-cp "$KERNEL_SRC/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dtb" /out/
+cp "$DTB" /out/sdm845-oneplus-enchilada.dtb
 cp "$KERNEL_SRC/.config" /out/kernel.config
 cp /build/initramfs.cpio.gz /out/
 cp "$BB/busybox" /out/busybox-aarch64

@@ -35,6 +35,9 @@ else
     python3 "$ROOT/scripts/extract-boot-from-ota.py" "$INPUT" "$BOOTIMG"
 fi
 
+echo "==> device trees in the stock kernel (what the bootloader matches on)"
+python3 "$ROOT/scripts/dtb-ids.py" "$BOOTIMG" || true
+
 echo
 if [ -f "$ROOT/out/pico-boot.img" ]; then
     python3 "$ROOT/scripts/inspect-bootimg.py" "$BOOTIMG" "$ROOT/out/pico-boot.img"

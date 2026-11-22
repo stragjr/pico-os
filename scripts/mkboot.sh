@@ -12,7 +12,7 @@ INITRAMFS=${2:?initramfs.cpio.gz}
 OUT=${3:?output boot.img}
 
 IMAGE=$KERNEL_SRC/arch/arm64/boot/Image.gz
-DTB=$KERNEL_SRC/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dtb
+DTB=${DTB:-$KERNEL_SRC/arch/arm64/boot/dts/qcom/sdm845-oneplus-enchilada.dtb}   # DTB=... overrides (patched tree)
 
 [ -f "$IMAGE" ] || { echo "missing $IMAGE (run: make kernel)" >&2; exit 1; }
 [ -f "$DTB" ]   || { echo "missing $DTB (is the enchilada device tree in your kernel?)" >&2; exit 1; }

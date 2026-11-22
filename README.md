@@ -76,6 +76,19 @@ Two different cases look alike. With the phone still showing the fastboot screen
 - `system_profiler SPUSBDataType | grep -B2 -A8 Pico`: if "Pico OnePlus 6" appears, the kernel
   IS running and only the screen is frozen on the old picture. Pico is then reachable over USB.
 
+### If `fastboot boot` says OKAY but the phone stays in fastboot
+
+The bootloader picks the appended device tree by `qcom,msm-id` and `qcom,board-id`, and the
+upstream Linux tree for the OnePlus 6 has neither. Copy the IDs from your phone's stock image:
+
+```
+python3 scripts/dtb-ids.py build/stock/ota.zip                                   # list what the stock kernel carries
+python3 scripts/dtb-ids.py build/stock/ota.zip --write kernel/bootloader-ids.txt  # save them for the build
+./scripts/mac-build.sh                                                           # rebuild: adds them to Pico's tree
+```
+
+(`build/stock/ota.zip` is whatever `check-stock-boot.sh` saved; any stock `boot.img` works.)
+
 ## Check before you flash
 
 One command checks Pico's boot image settings against your phone's stock boot image.
