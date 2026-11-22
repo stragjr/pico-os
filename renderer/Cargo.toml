@@ -1,0 +1,10 @@
+[package]
+name = "pico-renderer"
+version = "0.0.1"
+edition = "2021"
+description = "Pico's Material You-style renderer: software prototype with no dependencies"
+
+[dependencies]
+
+[profile.release]
+opt-level = 3

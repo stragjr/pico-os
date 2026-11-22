@@ -1,0 +1,58 @@
+#!/bin/busybox sh
+# Pico M0 init: mount the basics, bring up USB networking, open a debug shell.
+# Runs as PID 1 from the initramfs. Needs a static busybox at /bin/busybox.
+
+/bin/busybox --install -s /bin
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+mkdir -p /dev/pts /run /tmp /config
+mount -t devpts devpts /dev/pts
+mount -t tmpfs tmpfs /run
+mount -t tmpfs tmpfs /tmp
+mount -t configfs none /config 2>/dev/null
+
+echo "Pico M0: kernel $(uname -r) is up"
+
+# Kernel log somewhere we can read after a crash (needs pstore/ramoops in the device tree).
+mkdir -p /sys/fs/pstore
+mount -t pstore pstore /sys/fs/pstore 2>/dev/null
+
+# --- USB gadget: RNDIS network device -------------------------------------
+G=/config/usb_gadget/pico
+if [ -d /config/usb_gadget ]; then
+    mkdir -p "$G"
+    echo 0x1d6b > "$G/idVendor"
+    echo 0x0104 > "$G/idProduct"
+    mkdir -p "$G/strings/0x409"
+    echo "Pico"            > "$G/strings/0x409/manufacturer"
+    echo "Pico OnePlus 6"  > "$G/strings/0x409/product"
+    echo "pico0001"        > "$G/strings/0x409/serialnumber"
+    mkdir -p "$G/configs/c.1/strings/0x409"
+    echo "RNDIS"           > "$G/configs/c.1/strings/0x409/configuration"
+    mkdir -p "$G/functions/rndis.usb0"
+    ln -s "$G/functions/rndis.usb0" "$G/configs/c.1/" 2>/dev/null
+    UDC=$(ls /sys/class/udc 2>/dev/null | head -n1)
+    if [ -n "$UDC" ]; then
+        echo "$UDC" > "$G/UDC"
+        sleep 1
+        ip link set usb0 up 2>/dev/null
+        ip addr add 172.16.42.1/24 dev usb0 2>/dev/null
+        # M0 only: unauthenticated shell, reachable only over the USB cable.
+        telnetd -b 172.16.42.1 -l /bin/sh
+        echo "Pico M0: USB network up, telnet 172.16.42.1"
+    else
+        echo "Pico M0: no UDC found, USB networking skipped"
+    fi
+else
+    echo "Pico M0: configfs gadget support missing from this kernel"
+fi
+
+# --- Console shell --------------------------------------------------------
+# If this shell exits, PID 1 would die and the kernel would panic, so loop.
+while true; do
+    setsid sh -c 'exec sh </dev/console >/dev/console 2>&1'
+    sleep 1
+done
