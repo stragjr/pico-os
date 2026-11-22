@@ -30,12 +30,18 @@ The full plan lives in the "Pico OS - Plan" doc. This repo is milestone M0
 ## First boot (M0)
 
 1. Back up the stock partitions and unlock the bootloader (see the plan doc).
-2. Get a mainline kernel with the sdm845 enchilada device tree and merge the config:
-   `make kernel-config KERNEL_SRC=/path/to/linux`
-3. Build the kernel:
-   `make kernel KERNEL_SRC=/path/to/linux`
-4. Build the initramfs and boot image:
-   `make boot BUSYBOX=/path/to/busybox-aarch64 KERNEL_SRC=/path/to/linux`
+2. Build the kernel (fetches Linux v6.12 into `build/linux`, merges
+   `kernel/pico.config`, builds `Image.gz` and the enchilada device tree):
+   `make kernel-build` with the toolchain installed, or `make kernel-docker`
+   to do it in a Debian container. Read any `WARNING: CONFIG_... is not =y`
+   lines it prints: they mean a symbol in `kernel/pico.config` does not exist
+   in that kernel version and must be fixed before the phone can boot it.
+   Use `KERNEL_TAG=v6.x` to pick another version.
+3. Build the initramfs and boot image:
+   `make boot BUSYBOX=/path/to/busybox-aarch64 KERNEL_SRC=build/linux`
+4. (Optional) the same kernel and initramfs can be tried in QEMU with
+   `make qemu BUSYBOX=... KERNEL_SRC=build/linux`; QEMU's virt machine does not
+   use the enchilada device tree, so this only checks that init runs.
 5. Test from RAM, without flashing anything:
    `fastboot boot out/pico-boot.img`
 6. Once the phone shows up as a USB network device, give your PC an address on
