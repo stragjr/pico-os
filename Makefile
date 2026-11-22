@@ -3,14 +3,18 @@ BUSYBOX    ?=
 CROSS      ?= aarch64-linux-gnu-
 OUT        := out
 
-.PHONY: help kernel-build docker-build kernel-config kernel initramfs boot qemu renderer-demo renderer-test clean
+.PHONY: help build kernel-build docker-build kernel-config kernel initramfs boot qemu renderer-demo renderer-test clean
 
 help:
-	@echo "targets: docker-build kernel-build kernel-config kernel initramfs boot qemu renderer-demo renderer-test clean"
+	@echo "targets: build docker-build kernel-build kernel-config kernel initramfs boot qemu renderer-demo renderer-test clean"
 	@echo "set KERNEL_SRC=/path/to/linux and BUSYBOX=/path/to/static-aarch64-busybox"
 
 kernel-build:
 	sh scripts/build-kernel.sh
+
+# Everything natively (needs an aarch64 cross-compiler; on Arch, ./scripts/arch-build.sh installs it).
+build:
+	sh scripts/build-all.sh
 
 # Everything (kernel, BusyBox, initramfs, boot image) in a Linux container. Works on macOS too;
 # on a Mac, ./scripts/mac-build.sh also installs the tools for you.

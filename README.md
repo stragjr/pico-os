@@ -14,8 +14,9 @@ The full plan lives in the "Pico OS - Plan" doc. This repo is milestone M0
 | `kernel/pico.config` | Kernel config fragment: everything Pico needs on top of the sdm845 mainline defconfig |
 | `initramfs/init` | The first userspace program; mounts the basics, starts USB networking and a shell |
 | `scripts/mkinitramfs.py` | Packs `initramfs/` and a busybox binary into a gzipped newc cpio archive (no `cpio` needed) |
-| `scripts/mac-build.sh` | One command on macOS: installs tools, fetches sources, builds `out/pico-boot.img` |
-| `scripts/docker-build.sh`, `scripts/container-build.sh`, `docker/Dockerfile` | The containerized build (kernel, BusyBox, initramfs, boot image) |
+| `scripts/mac-build.sh`, `scripts/arch-build.sh` | One command on macOS (container build) or Arch Linux (native build): installs tools, fetches sources, builds `out/pico-boot.img` |
+| `scripts/build-all.sh` | The whole native build: kernel, BusyBox, initramfs, device tree IDs, `out/pico-boot.img` |
+| `scripts/docker-build.sh`, `scripts/container-build.sh`, `docker/Dockerfile` | Runs `build-all.sh` in a container (used by the macOS script) |
 | `scripts/build-kernel.sh` | Fetches Linux, merges `kernel/pico.config`, builds `Image.gz` and the device tree |
 | `scripts/mkboot.sh`, `scripts/mkbootimg.py` | Wrap kernel + device tree + initramfs into an Android boot image (pure Python, no AOSP tool needed) |
 | `scripts/run-qemu.sh` | Boots the same kernel and initramfs in QEMU `aarch64 virt` |
@@ -42,7 +43,7 @@ The source tree lives in a Docker volume, not a Mac folder, because the Linux
 source has file names that differ only by case, which macOS's default filesystem
 cannot hold. Linux with Docker can run `make docker-build` for the same result.
 
-## Quick start on Arch Linux
+## Quick start on Arch Linux (native, no Docker)
 
 ```
 git clone https://github.com/stragjr/pico-os
@@ -50,11 +51,13 @@ cd pico-os
 ./scripts/arch-build.sh
 ```
 
-Run it as your normal user. It installs `git python docker docker-buildx android-tools inetutils` with
-pacman, starts Docker, adds you to the `docker` group, then builds in a container exactly like the Mac
-script does (same output in `out/`, same `--boot` option). If you were just added to the `docker` group
-and the script cannot reach Docker, log out and back in and run it again. On other Linux distributions
-install Docker yourself and run `sh scripts/docker-build.sh`.
+Run it as your normal user. It installs the build tools and the aarch64 cross-compiler with pacman
+(`base-devel git python bc flex bison openssl libelf cpio curl dtc aarch64-linux-gnu-gcc
+aarch64-linux-gnu-glibc android-tools inetutils`), checks that the cross-compiler can link static
+programs, then runs `scripts/build-all.sh`: Linux v6.12, a static BusyBox, the initramfs and
+`out/pico-boot.img`, all built in `./build`. The same `--boot` option as the Mac script is available.
+On other Linux distributions install the equivalent packages and run `sh scripts/build-all.sh` (or
+`make build`).
 
 ## What you need without the Mac script
 
